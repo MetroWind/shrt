@@ -151,7 +151,7 @@ constexpr char MAIN_HTML[] = R"html(
       title="DoL"
       width="100%"
       height="1000"
-      src="{{ url_for("statics", "dol/Degrees of Lewdity.html") }}">
+      src="{{ url_for("dol", "Degrees of Lewdity.html") }}">
     </iframe>
     <script>
       document.getElementById("BtnLoad").addEventListener("click", (event) => {

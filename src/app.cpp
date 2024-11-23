@@ -75,9 +75,9 @@ std::string App::urlFor(const std::string& name, [[maybe_unused]] const std::str
     {
         return base_url.path();
     }
-    if(name == "statics")
+    if(name == "dol")
     {
-        return mw::URL(base_url).appendPath("statics").appendPath(arg).path();
+        return mw::URL(base_url).appendPath("dol").appendPath(arg).path();
     }
     if(name == "store-save")
     {
@@ -150,11 +150,9 @@ void App::start()
 void App::setup()
 {
     {
-        std::string statics_dir = (std::filesystem::path(config.data_dir) /
-                                   "statics").string();
-        spdlog::info("Mounting static dir at {}...", statics_dir);
+        spdlog::info("Mounting DoL dir at {}...", config.dol_dir);
         auto ret = server.set_mount_point(
-            mw::URL(base_url).appendPath("statics").path(), statics_dir);
+            mw::URL(base_url).appendPath("dol").path(), config.dol_dir);
         if (!ret)
         {
             spdlog::error("Failed to mount statics");

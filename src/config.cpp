@@ -56,6 +56,10 @@ mw::E<Configuration> Configuration::fromYaml(const std::filesystem::path& path)
     {
         tree["data-dir"] >> config.data_dir;
     }
+    if(tree["dol-dir"].readable())
+    {
+        tree["dol-dir"] >> config.dol_dir;
+    }
 
     return mw::E<Configuration>{std::in_place, std::move(config)};
 }
