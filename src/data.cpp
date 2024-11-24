@@ -12,6 +12,7 @@ mw::E<std::unique_ptr<DataSourceSQLite>>
 DataSourceSQLite::fromFile(const std::string& db_file)
 {
     auto data_source = std::make_unique<DataSourceSQLite>();
+    ASSIGN_OR_RETURN(data_source->db, mw::SQLite::connectFile(db_file));
 
     // Perform schema upgrade here.
     //
@@ -19,7 +20,6 @@ DataSourceSQLite::fromFile(const std::string& db_file)
 
     // Update this line when schema updates.
     DO_OR_RETURN(data_source->setSchemaVersion(1));
-    ASSIGN_OR_RETURN(data_source->db, mw::SQLite::connectFile(db_file));
     DO_OR_RETURN(data_source->db->execute(
         "CREATE TABLE IF NOT EXISTS Saves "
         "(id INTEGER PRIMARY KEY AUTOINCREMENT, time INTEGER, save TEXT);"));
