@@ -12,6 +12,13 @@ mw::E<std::unique_ptr<DataSourceSQLite>>
 DataSourceSQLite::fromFile(const std::string& db_file)
 {
     auto data_source = std::make_unique<DataSourceSQLite>();
+
+    // Perform schema upgrade here.
+    //
+    // data_source->upgradeSchema1To2();
+
+    // Update this line when schema updates.
+    DO_OR_RETURN(data_source->setSchemaVersion(1));
     ASSIGN_OR_RETURN(data_source->db, mw::SQLite::connectFile(db_file));
     DO_OR_RETURN(data_source->db->execute(
         "CREATE TABLE IF NOT EXISTS Saves "
@@ -22,6 +29,11 @@ DataSourceSQLite::fromFile(const std::string& db_file)
 mw::E<std::unique_ptr<DataSourceSQLite>> DataSourceSQLite::newFromMemory()
 {
     return fromFile(":memory:");
+}
+
+mw::E<int64_t> DataSourceSQLite::getSchemaVersion() const
+{
+    return db->evalToValue<int64_t>("PRAGMA user_version;");
 }
 
 mw::E<void> DataSourceSQLite::storeSave(const std::string& save) const
@@ -42,4 +54,9 @@ mw::E<std::optional<std::string>> DataSourceSQLite::loadLatestSave() const
         return std::nullopt;
     }
     return std::get<0>(rows[0]);
+}
+
+mw::E<void> DataSourceSQLite::setSchemaVersion(int64_t v) const
+{
+    return db->execute(std::format("PRAGMA user_version = {};", v));
 }
