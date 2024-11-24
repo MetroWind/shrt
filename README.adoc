@@ -1,0 +1,33 @@
+= DoL Server
+
+== How does it work?
+
+This is an HTTP server that serves a web page that wraps an Degree of
+Lewdity page. It provides server-side saves. The wrapper web page has
+two addition buttons to load saves from the server, and push the saves
+to the server. When it saves to the server, it basically takes a
+snapshot of the current local storage of the game (indexedDB,
+localStorage, and sessionStorage) and stores that in the server;
+similarly when it loads saves from the server, the local storage of
+the game is overwritten. This does not alter DoL in anyway, so if you
+save the game normally, it is still local. The server does not know
+about it.
+
+The server actually keeps all saves it receives. It never removes old
+saves (for now).
+
+== Deployment
+
+1. Build DoL by following the
+https://gitgud.io/Vrelnir/degrees-of-lewdity#how-to-build[official
+instructions]. This should produce `Degrees of Lewdity.html`.
+2. Download the server binary from “Releases”, uncompress and copy it
+to somewhere that is in your `$PATH`.
+3. Write a config file for the server. See
+https://github.com/MetroWind/service-management/blob/master/dol-server/config.yaml[example].
+The setting `dol-dir` should point to the directory that contains
+`Degrees of Lewdity.html`. The server will create a SQLite database in
+the directory pointed by `data-dir`, and the directory should be
+created before running the server. The server expects the config file
+to be at `/etc/dol-server.yaml`, which can be changed with `-c`.
+4. Run the server.
