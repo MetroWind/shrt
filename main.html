@@ -93,6 +93,8 @@
           height: calc(100vh - 32px);
       }
     </style>
+    <script src="https://unpkg.com/react@^18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@^18/umd/react-dom.production.min.js"></script>
     <script>
       function getSavesAndDetails(callback)
       {
@@ -225,20 +227,9 @@
               window.sessionStorage.setItem(key, value);
           }
       }
-    </script>
-  </head>
-  <body>
-    <header id="ServerHeader">
-      <a class="Button" id="BtnLoad" href="#">Load from Server</a>
-      <a class="Button" id="BtnSave" href="#">Save to Server</a>
-    </header>
-    <iframe
-      id="DoL"
-      title="DoL"
-      src="{{ url_for("dol", "Degrees of Lewdity.html") }}">
-    </iframe>
-    <script>
-      document.getElementById("BtnLoad").addEventListener("click", (event) => {
+
+      function onBtnLoadClick(event, onSuccess)
+      {
           fetch("{{ url_for("retrieve-save", "") }}").then((res) => {
               if(res.status == 200)
               {
@@ -253,8 +244,10 @@
               setLocalStorage(data.local);
               setSessionStorage(data.session);
           });
-      });
-      document.getElementById("BtnSave").addEventListener("click", (event) => {
+      }
+
+      function onBtnSaveClick(event)
+      {
           getSavesAndDetails((saves) => {
               const local_data = getLocalStorage();
               const session_data = getSessionStorage();
@@ -268,7 +261,41 @@
                   }
               });
           });
+      }
+
+      // =================== UI =============================>
+
+      let e = React.createElement;
+
+      function Button({label, on_click})
+      {
+          return e("a", {className: "Button", href: "#", onClick: on_click}, label);
+      }
+
+      function Header({})
+      {
+          return e("header", {id: "ServerHeader"},
+                   e(Button, {label: "Load from Server", on_click: onBtnLoadClick}),
+                   e(Button, {label: "Save to Server", on_click: onBtnSaveClick}));
+      }
+
+      window.addEventListener('load', () => {
+          let body = ReactDOM.createRoot(document.getElementById('ServerAddon'));
+          body.render(e(Header));
       });
     </script>
+  </head>
+  <body>
+    <div id="ServerAddon">
+      <!-- <header id="ServerHeader"> -->
+      <!--   <a class="Button" id="BtnLoad" href="#">Load from Server</a> -->
+      <!--   <a class="Button" id="BtnSave" href="#">Save to Server</a> -->
+      </header>
+    </div>
+    <iframe
+      id="DoL"
+      title="DoL"
+      src="{{ url_for("dol", "Degrees of Lewdity.html") }}">
+    </iframe>
   </body>
 </html>
