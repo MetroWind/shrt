@@ -96,45 +96,47 @@
     <script src="https://unpkg.com/react@^18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@^18/umd/react-dom.production.min.js"></script>
     <script>
-      function getSavesAndDetails(callback)
+      function getSavesAndDetails()
       {
-          const DBOpenRequest = window.indexedDB.open("degrees-of-lewdity");
-          DBOpenRequest.onerror = (event) => {
-              console.error("Error loading database.");
-          };
-
-          DBOpenRequest.onsuccess = (event) => {
-              console.info("Database initialized.");
-
-              let result = {};
-              // store the result of opening the database in the db
-              // variable. This is used a lot later on, for opening
-              // transactions and suchlike.
-              db = DBOpenRequest.result;
-
-              console.log(db.objectStoreNames);
-              const trans = db.transaction(["saves", "details"], "readonly");
-              const store = trans.objectStore("saves");
-              const req = store.getAll();
-              req.onerror = (event) => {
-                  console.error("Failed to read saves.");
+          return new Promise((resolve, reject) => {
+              const DBOpenRequest = window.indexedDB.open("degrees-of-lewdity");
+              DBOpenRequest.onerror = (event) => {
+                  reject("Error loading database.");
               };
 
-              req.onsuccess = (event) => {
-                  result["saves"] = req.result;
+              DBOpenRequest.onsuccess = (event) => {
+                  console.info("Database initialized.");
 
-                  const store1 = trans.objectStore("details");
-                  const req1 = store1.getAll();
-                  req1.onerror = (event) => {
-                      console.error("Failed to read details.");
+                  let result = {};
+                  // store the result of opening the database in the db
+                  // variable. This is used a lot later on, for opening
+                  // transactions and suchlike.
+                  db = DBOpenRequest.result;
+
+                  console.log(db.objectStoreNames);
+                  const trans = db.transaction(["saves", "details"], "readonly");
+                  const store = trans.objectStore("saves");
+                  const req = store.getAll();
+                  req.onerror = (event) => {
+                      reject("Failed to read saves.");
                   };
 
-                  req1.onsuccess = (event) => {
-                      result["details"] = req1.result;
-                      callback(result);
-                  };
-              }
-          };
+                  req.onsuccess = (event) => {
+                      result["saves"] = req.result;
+
+                      const store1 = trans.objectStore("details");
+                      const req1 = store1.getAll();
+                      req1.onerror = (event) => {
+                          reject("Failed to read details.");
+                      };
+
+                      req1.onsuccess = (event) => {
+                          result["details"] = req1.result;
+                          resolve(result);
+                      };
+                  }
+              };
+          });
       }
 
       function setSavesAndDetails(data)
@@ -248,18 +250,18 @@
 
       function onBtnSaveClick(event)
       {
-          getSavesAndDetails((saves) => {
+          getSavesAndDetails().then((saves) => {
               const local_data = getLocalStorage();
               const session_data = getSessionStorage();
-              fetch("{{ url_for("store-save", "") }}", {
+              return fetch("{{ url_for("store-save", "") }}", {
                   method: "POST",
                   body: JSON.stringify({"db": saves, "local": local_data, "session": session_data})
-              }).then((res) => {
-                  if(res.status != 200)
-                  {
-                      console.error("Failed to store save");
-                  }
               });
+          }).then((res) => {
+              if(res.status != 200)
+              {
+                  console.error("Failed to store save");
+              }
           });
       }
 
