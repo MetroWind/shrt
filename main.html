@@ -57,13 +57,17 @@
 
       /* ========== Actual styles ================================> */
 
-      #ServerHeader
+      #ServerAddon
       {
-          height: 32px;
           background-color: black;
           color: #999;
           font-family: sans-serif;
           font-size: 12px;
+      }
+
+      #ServerHeader
+      {
+          height: 32px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -91,6 +95,29 @@
       {
           width: 100%;
           height: calc(100vh - 32px);
+      }
+
+      #Notification
+      {
+          position: absolute;
+          top: calc(100vh - 32px);
+          left: 0px;
+          height: 32px;
+          width: 100vw;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+      }
+
+      .NotifyInfo
+      {
+          background-color: #16a085;
+      }
+
+      .NotifyError
+      {
+          background-color: #c0392b;
       }
     </style>
     <script src="https://unpkg.com/react@^18/umd/react.production.min.js"></script>
@@ -139,55 +166,69 @@
           });
       }
 
-      function setSavesAndDetails(data)
+      // This function wraps a window.indexedDB.open() call and
+      // returns a promise that wraps the result from the open
+      // request.
+      function openIndexedDB(name, onUpgradeNeeded)
       {
-          const DBOpenRequest = window.indexedDB.open("degrees-of-lewdity");
-          DBOpenRequest.onerror = (event) => {
-              console.error("Error loading database.");
-          };
+          return new Promise((resolve, reject) => {
+              const req = window.indexedDB.open("degrees-of-lewdity");
+              req.onerror = (_) => {
+                  reject("Error loading database.");
+              };
+		      req.onupgradeneeded = onUpgradeNeeded;
+              req.onsuccess = (_) => resolve(req.result);
+          });
+      }
 
-		  DBOpenRequest.onupgradeneeded = event => {
-			  console.log("updating idb", event.oldVersion);
-			  switch (event.oldVersion) {
-              case 0:
-              db.createObjectStore("saves", { keyPath: "slot" });
-			  db.createObjectStore("details", { keyPath: "slot" });
-              }
-          };
-
-          DBOpenRequest.onsuccess = (event) => {
-              console.info("Database initialized.");
-              // store the result of opening the database in the db
-              // variable. This is used a lot later on, for opening
-              // transactions and suchlike.
-              db = DBOpenRequest.result;
-
-              console.log(db.objectStoreNames);
-              const trans = db.transaction(["saves", "details"], "readwrite");
-              const store = trans.objectStore("saves");
+      // This function wraps a IDBObjectStore.clear() call and returns
+      // a promise that wraps the result from the clear request.
+      function clearObjectStore(store)
+      {
+          return new Promise((resolve, reject) => {
               const req_clear = store.clear();
-              req_clear.onsuccess = (event) => {
-                  for(let i = 0; i < data["saves"].length; i++)
-                  {
-                      const req = store.add(data.saves[i]);
-                      req.onerror = (event) => {
-                          console.error("Failed to store saves.");
-                      };
+              req_clear.onsuccess = (_) => resolve(req_clear.result);
+          });
+      }
+
+      // This function wraps a IDBObjectStore.add() call and returns
+      // a promise that wraps the result from the add request.
+      function addToObjectStore(store, stuff)
+      {
+          return new Promise((resolve, reject) => {
+              const req = store.add(stuff);
+              req.onerror = (_) => reject("Failed to add to object store.");
+              req.onsuccess = (_) => resolve(req.result);
+          });
+      }
+
+      async function setSavesAndDetails(data)
+      {
+          let db = await openIndexedDB(
+              "degrees-of-lewdity", event => {
+			      console.log("updating idb", event.oldVersion);
+			      switch (event.oldVersion) {
+                  case 0:
+                      db.createObjectStore("saves", { keyPath: "slot" });
+			          db.createObjectStore("details", { keyPath: "slot" });
                   }
-              };
-              const store1 = trans.objectStore("details");
-              const req_clear1 = store1.clear();
-              req_clear1.onsuccess = (event) => {
-                  for(let i = 0; i < data["details"].length; i++)
-                  {
-                      const req = store1.add(data.details[i]);
-                      req.onerror = (event) => {
-                          console.error("Failed to store details:");
-                          console.error(req.error);
-                      };
-                  }
-              };
-          };
+              });
+
+          console.info("Database initialized.");
+          const trans = db.transaction(["saves", "details"], "readwrite");
+          const store = trans.objectStore("saves");
+          await clearObjectStore(store);
+          for(let i = 0; i < data["saves"].length; i++)
+          {
+              await addToObjectStore(store, data.saves[i]);
+          }
+
+          const store1 = trans.objectStore("details");
+          await clearObjectStore(store1);
+          for(let i = 0; i < data["details"].length; i++)
+          {
+              await addToObjectStore(store1, data.details[i]);
+          }
       }
 
       function getLocalStorage()
@@ -230,39 +271,33 @@
           }
       }
 
-      function onBtnLoadClick(event, onSuccess)
+      async function onBtnLoadClick(event, onSuccess)
       {
-          fetch("{{ url_for("retrieve-save", "") }}").then((res) => {
-              if(res.status == 200)
-              {
-                  return res.json();
-              }
-              else
-              {
-                  console.error("Failed to retrieve save");
-              }
-          }).then((data) => {
-              setSavesAndDetails(data.db);
-              setLocalStorage(data.local);
-              setSessionStorage(data.session);
-          });
+          let res = await fetch("{{ url_for("retrieve-save", "") }}")
+          if(res.status != 200)
+          {
+              console.error("Failed to retrieve save");
+              return;
+          }
+          let data = await res.json();
+          await setSavesAndDetails(data.db);
+          setLocalStorage(data.local);
+          setSessionStorage(data.session);
       }
 
-      function onBtnSaveClick(event)
+      async function onBtnSaveClick(event)
       {
-          getSavesAndDetails().then((saves) => {
-              const local_data = getLocalStorage();
-              const session_data = getSessionStorage();
-              return fetch("{{ url_for("store-save", "") }}", {
-                  method: "POST",
-                  body: JSON.stringify({"db": saves, "local": local_data, "session": session_data})
-              });
-          }).then((res) => {
-              if(res.status != 200)
-              {
-                  console.error("Failed to store save");
-              }
+          let saves = await getSavesAndDetails();
+          const local_data = getLocalStorage();
+          const session_data = getSessionStorage();
+          let res = await fetch("{{ url_for("store-save", "") }}", {
+              method: "POST",
+              body: JSON.stringify({"db": saves, "local": local_data, "session": session_data})
           });
+          if(res.status != 200)
+          {
+              throw("Failed to store save");
+          }
       }
 
       // =================== UI =============================>
@@ -274,25 +309,70 @@
           return e("a", {className: "Button", href: "#", onClick: on_click}, label);
       }
 
-      function Header({})
+      function Header({on_load, on_save})
       {
           return e("header", {id: "ServerHeader"},
-                   e(Button, {label: "Load from Server", on_click: onBtnLoadClick}),
-                   e(Button, {label: "Save to Server", on_click: onBtnSaveClick}));
+                   e(Button, {label: "Load from Server", on_click: (e) =>
+                       onBtnLoadClick(e).then(() => on_load())}),
+                   e(Button, {label: "Save to Server", on_click: (e) =>
+                       onBtnSaveClick(e).then(() => on_save())}));
+      }
+
+      function NotificationView({type, msg, on_timeout})
+      {
+          let class_name = "";
+          if(type == "info")
+          {
+              class_name = "NotifyInfo";
+          }
+          else if(type == "error")
+          {
+              class_name = "NotifyError";
+          }
+
+          React.useEffect(() => { setTimeout(on_timeout, 3000); }, []);
+          return e("div", {className: class_name, id: "Notification"}, msg);
+      }
+
+      function AppView()
+      {
+          const [notify, setNotify] = React.useState(null);
+          function onLoad()
+          {
+              setNotify({type: "info", msg: "Loaded saves from server."});
+          }
+
+          function onSave()
+          {
+              setNotify({type: "info", msg: "Saved to server."});
+          }
+
+          function onNotificationTimeout()
+          {
+              setNotify(null);
+          }
+
+          if(notify == null)
+          {
+              return e(Header, {on_load: onLoad, on_save: onSave});
+          }
+          else
+          {
+              return e(React.Fragment, {},
+                       e(Header, {on_load: onLoad, on_save: onSave}),
+                       e(NotificationView, {type: notify.type, msg: notify.msg,
+                                            on_timeout: onNotificationTimeout}));
+          }
       }
 
       window.addEventListener('load', () => {
           let body = ReactDOM.createRoot(document.getElementById('ServerAddon'));
-          body.render(e(Header));
+          body.render(e(AppView));
       });
     </script>
   </head>
   <body>
     <div id="ServerAddon">
-      <!-- <header id="ServerHeader"> -->
-      <!--   <a class="Button" id="BtnLoad" href="#">Load from Server</a> -->
-      <!--   <a class="Button" id="BtnSave" href="#">Save to Server</a> -->
-      </header>
     </div>
     <iframe
       id="DoL"
