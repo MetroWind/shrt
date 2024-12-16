@@ -51,6 +51,8 @@ FetchContent_Declare(
 set(INJA_USE_EMBEDDED_JSON FALSE)
 set(INJA_BUILD_TESTS FALSE)
 set(SPDLOG_USE_STD_FORMAT ON)
+set(LIBMW_BUILD_URL ON)
+set(LIBMW_BUILD_SQLITE ON)
 FetchContent_MakeAvailable(libmw ryml spdlog cxxopts httplib json inja)
 
 add_custom_command(
@@ -75,7 +77,9 @@ set(SOURCE_FILES
 set(LIBS
   cxxopts
   httplib
-  mw
+  mw::mw
+  mw::url
+  mw::sqlite
   ryml::ryml
   spdlog::spdlog
 )
