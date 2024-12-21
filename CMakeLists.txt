@@ -53,6 +53,7 @@ set(INJA_BUILD_TESTS FALSE)
 set(SPDLOG_USE_STD_FORMAT ON)
 set(LIBMW_BUILD_URL ON)
 set(LIBMW_BUILD_SQLITE ON)
+set(LIBMW_BUILD_HTTP_SERVER ON)
 FetchContent_MakeAvailable(libmw ryml spdlog cxxopts httplib json inja)
 
 add_custom_command(
@@ -80,6 +81,7 @@ set(LIBS
   mw::mw
   mw::url
   mw::sqlite
+  mw::http-server
   ryml::ryml
   spdlog::spdlog
 )
