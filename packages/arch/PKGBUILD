@@ -17,9 +17,9 @@ options=(!debug !strip)
 install=shrt.install
 source=('git+https://github.com/MetroWind/shrt.git' "sysusers-${pkgname%-git}.conf" "${pkgname%-git}.service" "${pkgname%-git}.yaml")
 noextract=()
-sha256sums=('SKIP' "cbd783eda38d6ba8b30ab73e2edbce2b2acea9734647e58aeb52f0121a384e93"
-            "f9cb98d275baa20d552dfaf17f5cfa250c06ad077d6e5bb6537306b6194566fd"
-            "7e6b4ebb9b942642ec7bf3a435197ae11d5dd0576a2fe4506041c097657d0101")
+sha256sums=('SKIP' "1ea5c7d99be0954fb9aa6e22e7f11d485fd66d3232df3cbe3051c81e542b4bfc"
+            "1e65ce88985b19471af84a95ebf8f2d6726e6af434cd4dafd7203ad783510a0f"
+            "c91a4e0a43373e08343aba704cbd064936521decf23546a74d2d8b3f08a8e963")
 
 pkgver()
 {
