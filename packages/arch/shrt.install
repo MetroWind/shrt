@@ -1,0 +1,9 @@
+post_install()
+{
+    chown -R shrt:shrt var/lib/shrt
+}
+
+post_upgrade()
+{
+    chown -R shrt:shrt var/lib/shrt
+}
