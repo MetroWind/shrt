@@ -214,8 +214,12 @@ void App::handleIndex(Response& res) const
 
 void App::handleLinks(const Request& req, Response& res)
 {
-    auto session = prepareSession(req, res);
-    if(!session.has_value()) return;
+    auto session = prepareSession(req, res, true);
+    if(session->status == SessionValidation::INVALID)
+    {
+        res.set_redirect(urlFor("login"));
+        return;
+    }
 
     nlohmann::json render_data = {{"session_user", ""},
                                   {"title", "Links"},
