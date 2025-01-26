@@ -35,7 +35,7 @@ jobs:
       run: "cmake --build build --config ${{env.BUILD_TYPE}}"
 
     - name: Create release package
-      run: "tar -C .. -cv --zstd -f shrt/shrt.tar.zstd shrt/build/shrt shrt/statics shrt/templates"
+      run: "tar -C .. -cv --zstd -f shrt.tar.zstd shrt/build/shrt shrt/statics shrt/templates"
 
     - name: Create Draft Release
       id: create_release
