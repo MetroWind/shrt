@@ -35,7 +35,7 @@ jobs:
       run: "cmake --build build --config ${{env.BUILD_TYPE}}"
 
     - name: Create release package
-      run: "zstd build/dol-server"
+      run: "tar -C .. -cv --zstd -f shrt/shrt.tar.zstd shrt/build/shrt shrt/statics shrt/templates"
 
     - name: Create Draft Release
       id: create_release
@@ -43,8 +43,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: binaries-${{ github.sha }}
-        release_name: binaries ${{ github.sha }}
+        tag_name: binary-${{ github.sha }}
+        release_name: binary ${{ github.sha }}
         draft: true
         prerelease: false
 
@@ -53,8 +53,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: "${{github.workspace}}/build/dol-server.zst"
-        asset_name: dol-server.zst
+        asset_path: "${{github.workspace}}/shrt.tar.zstd"
+        asset_name: shrt.tar.zstd
         asset_content_type: application/zstd
 
     - uses: eregon/publish-release@v1
