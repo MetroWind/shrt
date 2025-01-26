@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include "head.html" %}
+    <meta property="og:title" content="shrt">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url_for("links") }}">
+    <title>shrt</title>
+  </head>
+  <body>
+    <div id="Body" class="Window">
+      {% include "nav.html" %}
+      <div class="Toolbar">
+        <a class="FloatButton" href="{{ url_for("new-link") }}">➕</a>
+      </div>
+      <div id="Links">
+        <table class="TableView">
+          <thead><tr>
+            <th>Shortcut</th>
+            <th>URL</th>
+            <th>Regexp?</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody>
+            {% for link in links %}
+            <tr>
+              <td>{{ link.shortcut }}</td>
+              <td>{{ link.original_url }}</td>
+              <td>{{ link.type_is_regexp_str }}</td>
+              <td><a href="{{ url_for("delete-link", link.id_str) }}">❌</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% include "footer.html" %}
+    </div>
+  </body>
+</html>

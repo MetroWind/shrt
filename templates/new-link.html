@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include "head.html" %}
+    <title>shrt – Create a New Link</title>
+  </head>
+  <body>
+    <div id="Body" class="Window Dialog">
+      {% include "nav.html" %}
+      <form action="{{ url_for("create-link") }}" method="post" id="LinkForm">
+        <table class="InputFields">
+          <tr>
+            <td><label for="shortcut">Shortcut</label></td>
+            <td><input type="text" name="shortcut" id="shortcut"
+                       minlength="2" pattern="(\p{L}|\p{N}|_|-|\.)+"></td>
+          </tr>
+          <tr>
+            <td><label for="original_url">URL</label></td>
+            <td><input type="url" name="original_url" id="original_url" required></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>
+              <input type="checkbox" id="regexp" name="regexp">
+              <label for="regexp">Regexp</label>
+            </td>
+          </tr>
+        </table>
+        <div class="ButtonRow">
+          <input type="submit" value="Add link!">
+        </div>
+      </form>
+      {% include "footer.html" %}
+    </div>
+  </body>
+</html>

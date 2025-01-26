@@ -56,9 +56,17 @@ mw::E<Configuration> Configuration::fromYaml(const std::filesystem::path& path)
     {
         tree["data-dir"] >> config.data_dir;
     }
-    if(tree["dol-dir"].readable())
+    if(tree["openid-url-prefix"].readable())
     {
-        tree["dol-dir"] >> config.dol_dir;
+        tree["openid-url-prefix"] >> config.openid_url_prefix;
+    }
+    if(tree["client-id"].readable())
+    {
+        tree["client-id"] >> config.client_id;
+    }
+    if(tree["client-secret"].readable())
+    {
+        tree["client-secret"] >> config.client_secret;
     }
 
     return mw::E<Configuration>{std::in_place, std::move(config)};

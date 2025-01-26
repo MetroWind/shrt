@@ -1,0 +1,17 @@
+<nav class="Titlebar">
+  <span id="NavLeft">
+    {{ title }}
+  </span>
+
+  <span id="NavCenter"></span>
+
+  <span id="NavRight">
+    <span>
+      {% if length(session_user) > 0 %}
+      {{ session_user }}
+      {% else %}
+      <a href="{{ url_for("login") }}">Login</a>
+      {% endif %}
+    </span>
+  </span>
+</nav>

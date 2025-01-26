@@ -2,6 +2,8 @@
 
 #include <cxxopts.hpp>
 #include <spdlog/spdlog.h>
+#include <mw/url.hpp>
+#include <mw/error.hpp>
 
 #include "config.hpp"
 #include "data.hpp"
@@ -32,16 +34,37 @@ int main(int argc, char** argv)
         config = mw::E<Configuration>(Configuration());
     }
 
+    auto url_prefix = mw::URL::fromStr(config->base_url);
+    if(!url_prefix.has_value())
+    {
+        spdlog::error("Invalid base URL: {}", config->base_url);
+        return 1;
+    }
+
+    auto auth = mw::AuthOpenIDConnect::create(
+        config->openid_url_prefix, config->client_id, config->client_secret,
+        url_prefix->appendPath("_/openid-redirect").str(),
+        std::make_unique<mw::HTTPSession>());
+    if(!auth.has_value())
+    {
+        spdlog::error("Failed to create authentication module: {}",
+                      std::visit([](const auto& e) { return e.msg; },
+                                 auth.error()));
+        return 1;
+    }
+
     auto data_source = DataSourceSQLite::fromFile(
-        (std::filesystem::path(config->data_dir) / "saves.db").string());
+        (std::filesystem::path(config->data_dir) / "data.db").string());
     if(!data_source.has_value())
     {
         spdlog::error("Failed to create data source: {}",
                       errorMsg(data_source.error()));
         return 2;
     }
-    App app(*std::move(config), *std::move(data_source));
+    App app(*config, *std::move(data_source), *std::move(auth));
     app.start();
+    spdlog::info("Listening at {}:{}...", config->listen_address,
+                 config->listen_port);
     app.wait();
     return 0;
 }

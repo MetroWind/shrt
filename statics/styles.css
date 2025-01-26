@@ -1,0 +1,290 @@
+/* http://meyerweb.com/eric/tools/css/reset/
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: unset;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+/* ========== Actual styles ======================================> */
+
+:root
+{
+    --color-bg: #c0c0c0;
+    --color-fg: black;
+    --color-border-dark-1: #808080;
+    --color-border-dark-2: black;
+    --color-border-light-1: #dfdfdf;
+    --color-border-light-2: white;
+    --color-titlebar-1: navy;
+    --color-titlebar-2: #1084d0;
+}
+
+*
+{
+    box-sizing: border-box;
+}
+
+html
+{
+    background: #008080;
+    color: var(--color-fg);
+    font-family: sans-serif;
+    font-size: 12px;
+    padding: 12px;
+}
+
+.Window
+{
+    box-shadow: inset -1px -1px var(--color-border-dark-2),
+                inset 1px 1px var(--color-border-light-1),
+                inset -2px -2px var(--color-border-dark-1),
+                inset 2px 2px var(--color-border-light-2);
+    background: var(--color-bg);
+    padding: 10px;
+
+    .Titlebar
+    {
+        background: linear-gradient(90deg, var(--color-titlebar-1), var(--color-titlebar-2));
+        margin: -6px -6px 10px -6px;
+        color: white;
+        padding: 3px;
+    }
+}
+
+.Dialog
+{
+    max-width: 800px;
+    margin: 0px auto;
+}
+
+input[type="text"], input[type="url"], input[type="email"], textarea
+{
+    appearance: none;
+    border: none;
+    outline: none;
+    box-shadow: inset -1px -1px var(--color-border-light-2),
+                inset 1px 1px var(--color-border-dark-1),
+                inset -2px -2px var(--color-border-light-1),
+                inset 2px 2px var(--color-border-dark-2);
+    width: 100%;
+    padding: 4px 6px;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+a.Button, a.FloatButton
+{
+    color: black;
+    text-decoration: none;
+}
+
+button, input[type="submit"]
+{
+    appearance: none;
+    border: none;
+    outline: none;
+    box-shadow: inset -1px -1px var(--color-border-dark-2),
+                inset 1px 1px var(--color-border-light-1),
+                inset -2px -2px var(--color-border-dark-1),
+                inset 2px 2px var(--color-border-light-2);
+    background: var(--color-bg);
+    min-height: 23px;
+    min-width: 75px;
+    padding: 0 12px;
+    text-align: center;
+}
+
+.IconButton
+{
+    padding: 4px;
+    min-width: unset;
+    min-height: unset;
+}
+
+.FloatButton
+{
+    padding: 4px;
+    min-width: unset;
+    min-height: unset;
+    box-shadow: none;
+}
+
+.FloatButton:hover
+{
+    padding: 4px;
+    min-width: unset;
+    min-height: unset;
+    box-shadow: inset 1px 1px var(--color-border-light-1),
+                inset -1px -1px var(--color-border-dark-1);
+}
+
+button:active, .FloatButton:active
+{
+    box-shadow: inset -1px -1px var(--color-border-light-2),
+                inset 1px 1px var(--color-border-dark-1),
+                inset -2px -2px var(--color-border-light-1),
+                inset 2px 2px var(--color-border-dark-2);
+}
+
+hr
+{
+    border: none;
+    border-top: solid var(--color-border-dark-1) 1px;
+    border-bottom: solid var(--color-border-light-1) 1px;
+}
+
+.ButtonRow
+{
+    display: flex;
+    justify-content: right;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.ButtonRowLeft
+{
+    text-align: Left;
+    margin-top: 10px;
+}
+
+.Toolbar
+{
+    display: flex;
+    border-bottom: solid var(--color-border-dark-1) 1px;
+    box-shadow: 0px 1px var(--color-border-light-1);
+    position: relative;
+    left: -10px;
+    top: -10px;
+    width: calc(100% + 2ex);
+    padding: 2px 8px;
+}
+
+table.InputFields
+{
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: auto;
+
+    td
+    {
+        padding: 2px 2px;
+    }
+
+    td:nth-child(2)
+    {
+        width: 100%;
+    }
+
+}
+
+.StatusBar
+{
+    margin: 10px -6px -7px -6px;
+    display: flex;
+}
+
+.StatusCell
+{
+    box-shadow: inset -2px -2px var(--color-border-light-2),
+                inset 2px 2px var(--color-border-dark-1);
+    padding: 4px;
+    flex-grow: 1;
+}
+
+nav
+{
+    display: flex;
+    justify-content: space-between;
+}
+
+#Links
+{
+    box-shadow: inset -1px -1px var(--color-border-light-2),
+                inset 1px 1px var(--color-border-dark-1),
+                inset -2px -2px var(--color-border-light-1),
+                inset 2px 2px var(--color-border-dark-2);
+    padding: 2px;
+}
+
+table.TableView
+{
+    background-color: white;
+    border-collapse: collapse;
+    width: 100%;
+
+    thead th
+    {
+        box-shadow: inset -1px -1px var(--color-border-dark-2),
+                    inset 1px 1px var(--color-border-light-1),
+                    inset -2px -2px var(--color-border-dark-1),
+                    inset 2px 2px var(--color-border-light-2);
+        background-color: var(--color-bg);
+        padding: 2px 4px 4px 4px;
+        text-align: left;
+    }
+
+    td
+    {
+        padding: 2px;
+    }
+}
+
+#Links table
+{
+    th:nth-child(2)
+    {
+        width: 100%;
+    }
+
+    /* th:nth-child(3), th:nth-child(4) */
+    /* { */
+    /*     width: 64px; */
+    /* } */
+
+    td:nth-child(3), td:nth-child(4)
+    {
+        text-align: center;
+    }
+}

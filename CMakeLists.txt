@@ -1,9 +1,10 @@
-# cmake -B build . && cmake --build build -j
+# cmake -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE=include-what-you-use -B build . && cmake --build build -j
 cmake_minimum_required(VERSION 3.24)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-project(DoLServer)
+project(Shrt)
+option(SHRT_BUILD_TESTS "Build unit tests" OFF)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -31,12 +32,6 @@ FetchContent_Declare(
 )
 
 FetchContent_Declare(
-  httplib
-  GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
-  GIT_TAG v0.18.0
-)
-
-FetchContent_Declare(
   json
   GIT_REPOSITORY https://github.com/nlohmann/json.git
   GIT_TAG v3.11.3
@@ -48,21 +43,22 @@ FetchContent_Declare(
   GIT_TAG main
 )
 
-set(INJA_USE_EMBEDDED_JSON FALSE)
-set(INJA_BUILD_TESTS FALSE)
 set(SPDLOG_USE_STD_FORMAT ON)
 set(LIBMW_BUILD_URL ON)
 set(LIBMW_BUILD_SQLITE ON)
 set(LIBMW_BUILD_HTTP_SERVER ON)
-FetchContent_MakeAvailable(libmw ryml spdlog cxxopts httplib json inja)
+set(LIBMW_BUILD_CRYPTO ON)
+set(INJA_USE_EMBEDDED_JSON FALSE)
+set(INJA_BUILD_TESTS FALSE)
+FetchContent_MakeAvailable(libmw ryml spdlog cxxopts json inja)
 
-add_custom_command(
-  COMMAND bash make-static.sh
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  DEPENDS make-static.sh "main.html"
-  OUTPUT src/statics.hpp
-  COMMENT "Generating code for HTML embed"
-)
+if(SHRT_BUILD_TESTS)
+  FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz
+  )
+  FetchContent_MakeAvailable(googletest)
+endif()
 
 set(SOURCE_FILES
   src/app.cpp
@@ -71,17 +67,15 @@ set(SOURCE_FILES
   src/config.hpp
   src/data.cpp
   src/data.hpp
-  src/main.cpp
-  src/statics.hpp
 )
 
 set(LIBS
   cxxopts
-  httplib
   mw::mw
   mw::url
   mw::sqlite
   mw::http-server
+  mw::crypto
   ryml::ryml
   spdlog::spdlog
 )
@@ -92,10 +86,42 @@ set(INCLUDES
   ${inja_SOURCE_DIR}/single_include/inja
 )
 
-add_executable(dol-server ${SOURCE_FILES} src/main.cpp)
-set_property(TARGET dol-server PROPERTY CXX_STANDARD 23)
+add_executable(shrt ${SOURCE_FILES} src/main.cpp)
+set_property(TARGET shrt PROPERTY CXX_STANDARD 23)
+set_property(TARGET shrt PROPERTY CXX_EXTENSIONS FALSE)
 
-set_property(TARGET dol-server PROPERTY COMPILE_WARNING_AS_ERROR TRUE)
-target_compile_options(dol-server PRIVATE -Wall -Wextra -Wpedantic)
-target_include_directories(dol-server PRIVATE ${INCLUDES})
-target_link_libraries(dol-server PRIVATE ${LIBS})
+set_property(TARGET shrt PROPERTY COMPILE_WARNING_AS_ERROR TRUE)
+target_compile_options(shrt PRIVATE -Wall -Wextra -Wpedantic)
+target_include_directories(shrt PRIVATE ${INCLUDES})
+target_link_libraries(shrt PRIVATE ${LIBS})
+
+if(SHRT_BUILD_TESTS)
+  set(TEST_FILES
+    src/data_mock.hpp
+    src/data_test.cpp
+    src/app_test.cpp
+  )
+
+  # ctest --test-dir build
+  add_executable(shrt_test ${SOURCE_FILES} ${TEST_FILES})
+  set_property(TARGET shrt_test PROPERTY CXX_STANDARD 23)
+  set_property(TARGET shrt_test PROPERTY COMPILE_WARNING_AS_ERROR TRUE)
+  target_compile_options(shrt_test PRIVATE -Wall -Wextra -Wpedantic)
+  target_include_directories(shrt_test PRIVATE
+    ${INCLUDES}
+    ${googletest_SOURCE_DIR}/googletest/include
+    ${googletest_SOURCE_DIR}/googlemock/include
+  )
+
+  target_link_libraries(shrt_test PRIVATE
+    ${LIBS}
+    GTest::gtest_main
+    GTest::gmock_main
+  )
+
+  enable_testing()
+  include(GoogleTest)
+  gtest_discover_tests(shrt_test
+    # Need this so that the unit tests can find the templates.
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()

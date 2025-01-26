@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include "head.html" %}
+    <title>shrt – Delet a Link</title>
+  </head>
+  <body>
+    <div id="Body" class="Window Dialog">
+      {% include "nav.html" %}
+      <form action="{{ url_for("delete-link") }}" method="post" id="DeleteLinkForm">
+        <table class="InputFields">
+          <tr>
+            <td><label for="id">Shortcut</label></td>
+            <td><input type="text" name="id" id="id" readonly value="{{ link.id_str }}" /></td>
+          </tr>
+          <tr>
+            <td><label for="shortcut">Shortcut</label></td>
+            <td><input type="text" id="shortcut" readonly value="{{ link.shortcut }}" /></td>
+          </tr>
+          <tr>
+            <td><label for="original_url">URL</label></td>
+            <td><input type="url" id="original_url" readonly value="{{ link.original_url }}" /></td>
+          </tr>
+        </table>
+        <div class="ButtonRow">
+          <input type="submit" value="Delete link!" />
+        </div>
+      </form>
+      {% include "footer.html" %}
+    </div>
+  </body>
+</html>
