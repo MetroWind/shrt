@@ -12,10 +12,10 @@
 int main(int argc, char** argv)
 {
     cxxopts::Options cmd_options(
-        "DoL server", "A DoL server");
+        "shrt", "A naively simple URL shortener");
     cmd_options.add_options()
         ("c,config", "Config file",
-         cxxopts::value<std::string>()->default_value("/etc/dol-server.yaml"))
+         cxxopts::value<std::string>()->default_value("/etc/shrt.yaml"))
         ("h,help", "Print this message.");
     auto opts = cmd_options.parse(argc, argv);
 
@@ -59,10 +59,17 @@ int main(int argc, char** argv)
     {
         spdlog::error("Failed to create data source: {}",
                       errorMsg(data_source.error()));
-        return 2;
+        return 1;
     }
     App app(*config, *std::move(data_source), *std::move(auth));
-    app.start();
+    auto start = app.start();
+    if(!start.has_value())
+    {
+        spdlog::error("Failed to start server: {}",
+                      mw::errorMsg(start.error()));
+        return 1;
+    }
+
     spdlog::info("Listening at {}:{}...", config->listen_address,
                  config->listen_port);
     app.wait();
