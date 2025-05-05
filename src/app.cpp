@@ -21,6 +21,7 @@
 #include <mw/auth.hpp>
 
 #include "app.hpp"
+#include "config.hpp"
 #include "data.hpp"
 #include "mw/error.hpp"
 
@@ -126,12 +127,29 @@ bool validateShortcut([[maybe_unused]] std::string_view shortcut)
     return true;
 }
 
+mw::HTTPServer::ListenAddress listenAddrFromConfig(const Configuration& config)
+{
+    if(config.listen_port == 0)
+    {
+        mw::SocketFileInfo sock(config.listen_address);
+        sock.user = config.socket_user;
+        sock.group = config.socket_group;
+        sock.permission = config.socket_permission;
+        return sock;
+    }
+
+    mw::IPSocketInfo sock;
+    sock.address = config.listen_address;
+    sock.port = config.listen_port;
+    return sock;
+}
+
 } // namespace
 
 App::App(const Configuration& conf,
          std::unique_ptr<DataSourceInterface> data_source,
          std::unique_ptr<mw::AuthInterface> openid_auth)
-        : mw::HTTPServer(conf.listen_address, conf.listen_port),
+        : mw::HTTPServer(listenAddrFromConfig(conf)),
           config(conf),
           templates((std::filesystem::path(config.data_dir) / "templates" / "")
                     .string()),

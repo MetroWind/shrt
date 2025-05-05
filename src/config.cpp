@@ -48,6 +48,18 @@ mw::E<Configuration> Configuration::fromYaml(const std::filesystem::path& path)
     {
         tree["listen-port"] >> config.listen_port;
     }
+    if(tree["socket-user"].readable())
+    {
+        tree["socket-user"] >> config.socket_user;
+    }
+    if(tree["socket-group"].readable())
+    {
+        tree["socket-group"] >> config.socket_group;
+    }
+    if(tree["socket-permission"].readable())
+    {
+        tree["socket-permission"] >> config.socket_permission;
+    }
     if(tree["base-url"].readable())
     {
         tree["base-url"] >> config.base_url;
